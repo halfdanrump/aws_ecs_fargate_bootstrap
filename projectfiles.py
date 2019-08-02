@@ -1,3 +1,4 @@
+import abc
 import json
 import yaml
 import os
@@ -29,7 +30,23 @@ class ContainerDeployment:
     essential: bool = True
 
 
-class BuildspecFile:
+class FileBase(abc.ABC):
+    def render(self, folder: str, filename: str):
+        """
+        improve this. I don't want to have to pass folders and filenames.
+        At least it should be handled by some other class.
+        """
+        filepath = os.path.join(folder, filename)
+        with open(filepath, "rw") as f:
+            f.write(yaml.dump(self.document))
+
+    @property
+    @abc.abstractmethod
+    def document(self):
+        return self.document
+
+
+class BuildspecFile(FileBase):
     """
     Class for creating a single buildspec file
     """
@@ -60,20 +77,20 @@ class BuildspecFile:
                 f"printf '{json.dumps(imagedefinitions)}' > {imagedefinitions_filename}",
             ],
         }
+
         document = {
             "version": buildspec_version,
             "phases": phases,
             "artifacts": imagedefinitions_filename,
         }
-        self.docker_compose_filename = docker_compose_filename
-        self.imagedefinitions = imagedefinitions
-        self.phases = phases
-        self.document = document
 
-    def render(self, folder: str, filename: str):
-        filepath = os.path.join(folder, filename)
-        with open(filepath, "rw") as f:
-            f.write(yaml.dump(self.document))
+        self._imagedefinitions = imagedefinitions
+        self._phases = phases
+        self._document = document
+
+        @property
+        def document(self):
+            return self._document
 
 
 class ContainerDefinitionsFile:
@@ -111,4 +128,8 @@ class ContainerDefinitionsFile:
                 # "cpu": 0,
             }
         ]
-        self.tasks = tasks
+        self._document = tasks
+
+        @property
+        def document(self):
+            return self._document
