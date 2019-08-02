@@ -16,6 +16,10 @@ class DockerImage:
     def uri(self):
         return f"{self.ecr_endpoint}/{self.name}_{self.environment}:{self.tag}"
 
+    @property
+    def filename(self):
+        return f"Dockerfile-{self.name}"
+
 
 class BuildspecFile:
     """
