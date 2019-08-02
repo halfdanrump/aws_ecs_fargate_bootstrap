@@ -88,9 +88,9 @@ class BuildspecFile(FileBase):
         self._phases = phases
         self._document = document
 
-        @property
-        def document(self):
-            return self._document
+    @property
+    def document(self):
+        return self._document
 
 
 class ContainerDefinitionsFile:
@@ -103,6 +103,7 @@ class ContainerDefinitionsFile:
             {
                 "name": deployment.image.name,
                 "image": deployment.image.uri,
+                # TODO add env vars dynamically?
                 "environment": [
                     {
                         "name": "RUNTIME_ENVIRONMENT",
@@ -130,6 +131,6 @@ class ContainerDefinitionsFile:
         ]
         self._document = tasks
 
-        @property
-        def document(self):
-            return self._document
+    @property
+    def document(self):
+        return self._document
