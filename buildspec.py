@@ -1,6 +1,20 @@
 import json
 import yaml
 import os
+from dataclasses import dataclass
+
+
+@dataclass
+class DockerImage:
+    ecr_endpoint: str
+    name: str
+    environment: str
+    tag: str = "latest"
+    description: str
+
+    @property
+    def uri(self):
+        return f"{self.ecr_endpoint}/{self.name}_{self.environment}:{self.tag}"
 
 
 class BuildspecFile:
@@ -8,15 +22,18 @@ class BuildspecFile:
     Class for creating a single buildspec file
     """
 
-    def __init__(self, name: str, environment: str = "production"):
+    def __init__(self, image: DockerImage):
+        """
+        Args:
+            name: name of the project
+            environment: deployment environment, typically `production` or `staging`
+        """
+        name, environment = image.name, image.environment
+
         docker_compose_filename = f"docker-compose-{name}-{environment}-fargate.yml"
         imagedefinitions_filename = f"imagedefinitions_{name}-{environment}.json"
-        imagedefinitions = [
-            {
-                "name": f"{name}",
-                "imageUri": f"211367837384.dkr.ecr.ap-northeast-1.amazonaws.com/{name}_{environment}:latest",
-            }
-        ]
+        imagedefinitions = [{"name": f"{name}", "imageUri": image.uri}]
+
         phases = {
             "pre_build": {
                 "commands": [
