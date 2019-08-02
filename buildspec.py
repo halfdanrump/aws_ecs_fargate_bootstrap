@@ -21,12 +21,20 @@ class DockerImage:
         return f"Dockerfile-{self.name}"
 
 
+@dataclass
+class ContainerDeployment:
+    region: str
+    awslogs_group: str
+    image: DockerImage
+    essential: bool = True
+
+
 class BuildspecFile:
     """
     Class for creating a single buildspec file
     """
 
-    def __init__(self, image: DockerImage):
+    def __init__(self, image: DockerImage, buildspec_version: str = "0.2"):
         """
         Args:
             name: name of the project
@@ -53,7 +61,7 @@ class BuildspecFile:
             ],
         }
         document = {
-            "version": 0.2,
+            "version": buildspec_version,
             "phases": phases,
             "artifacts": imagedefinitions_filename,
         }
