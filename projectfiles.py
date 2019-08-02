@@ -2,7 +2,13 @@ import abc
 import json
 import yaml
 import os
+from enum import IntEnum
 from dataclasses import dataclass
+
+
+class FileType(IntEnum):
+    yaml = 1
+    json = 2
 
 
 @dataclass
@@ -65,6 +71,11 @@ class FileBase(abc.ABC):
     def filepath(self):
         pass
 
+    @property
+    @abc.abstractmethod
+    def filetype(self):
+        pass
+
 
 #
 #
@@ -75,6 +86,8 @@ class BuildspecDockerbuildFile(FileBase):
     - builds Docker image
     - pushes Docker image to ECR
     """
+
+    filetype = FileType.yaml
 
     def __init__(self, image: DockerImage, buildspec_version: str = "0.2"):
         """
@@ -122,7 +135,10 @@ class BuildspecDockerbuildFile(FileBase):
         return f"buildspec/{self.image.name}/buildspec-dockerbuild-{self.image.environment}.yml"
 
 
-class ContainerDefinitionsFile:
+class ContainerDefinitionsFile(FileBase):
+
+    filetype = FileType.json
+
     def __init__(self, deployment: ContainerDeployment):
         """
         Defines a task to be run in ecs in `region`.
@@ -170,12 +186,14 @@ class ContainerDefinitionsFile:
         return f"terraform/task_definitions/{self.deployment.image.name}_{self.deployment.image.environment}.json"
 
 
-class DockerComposeFile:
+class DockerComposeFile(FileBase):
     """
     The compose files are just used in the buildspec. It's possible that
     I won't need this class in the future, but now I'm just modelling my
     current setup.
     """
+
+    filetype = FileType.yaml
 
     def __init__(
         self,
