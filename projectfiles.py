@@ -52,14 +52,24 @@ class ContainerDeployment:
 
 
 class FileBase(abc.ABC):
-    def render(self, folder: str, filename: str):
+    def dump(self) -> str:
         """
         improve this. I don't want to have to pass folders and filenames.
         At least it should be handled by some other class.
         """
-        filepath = os.path.join(folder, filename)
-        with open(filepath, "rw") as f:
-            f.write(yaml.dump(self.document))
+        if self.filetype == FileType.yaml:
+            dumped = yaml.dump(self.document, default_flow_style=False)
+        elif self.filetype == FileType.json:
+            dumped = json.dumps(self.document)
+        return dumped
+
+    def write(self, dumped: str):
+        folder, filename = os.path.split(self.filepath)
+        print(f"Writing file {self.filepath}")
+        if folder:
+            os.makedirs(folder, exist_ok=True)
+        with open(self.filepath, "w") as f:
+            f.write(dumped)
 
     @property
     @abc.abstractmethod
