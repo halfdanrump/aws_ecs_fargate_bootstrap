@@ -7,11 +7,11 @@ from dataclasses import dataclass
 
 @dataclass
 class DockerImage:
-    ecr_endpoint: str
     name: str
     environment: str
-    tag: str = "latest"
     description: str
+    ecr_endpoint: str
+    tag: str = "latest"
 
     @property
     def uri(self):
@@ -23,11 +23,26 @@ class DockerImage:
 
 
 @dataclass
-class ContainerDeployment:
+class Project:
+    account_id: str
+    name: str
     region: str
-    awslogs_group: str
+    vpc_name: str
+
+    @property
+    def ecr_endpoint(self):
+        return f"{self.account_id}.dkr.ecr.{self.region}.amazonaws.com"
+
+
+@dataclass
+class ContainerDeployment:
     image: DockerImage
+    project: Project
     essential: bool = True
+
+    @property
+    def awslogs_group(self):
+        return f"/aws/ecs/{self.project.vpc_name}/{self.image.name}/{self.image.environment}"
 
 
 class FileBase(abc.ABC):
@@ -46,6 +61,8 @@ class FileBase(abc.ABC):
         return self.document
 
 
+#
+#
 class BuildspecFile(FileBase):
     """
     Class for creating a single buildspec file
@@ -119,7 +136,7 @@ class ContainerDefinitionsFile:
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": deployment.awslogs_group,
-                        "awslogs-region": deployment.region,
+                        "awslogs-region": deployment.project.region,
                         "awslogs-stream-prefix": "ecs",
                     },
                 }
@@ -143,12 +160,17 @@ class DockerComposeFile:
     current setup.
     """
 
-    def __init__(self, image: DockerImage, compose_version: str = "3.2"):
+    def __init__(
+        self,
+        image: DockerImage,
+        build_context: str = "containers/",  # TODO remove default value. Should be managed be abstraction.
+        compose_version: str = "3.2",
+    ):
         services = {
             "version": compose_version,
             "services": {
                 image.name: {
-                    "build": {"context": "containers/", "dockerfile": image.filename},
+                    "build": {"context": build_context, "dockerfile": image.filename},
                     "image": image.uri,
                     # "environment": [f"RUNTIME_ENVIRONMENT=production"],
                 }
