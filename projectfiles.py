@@ -58,14 +58,22 @@ class FileBase(abc.ABC):
     @property
     @abc.abstractmethod
     def document(self):
-        return self.document
+        pass
+
+    @property
+    @abc.abstractmethod
+    def filepath(self):
+        pass
 
 
 #
 #
-class BuildspecFile(FileBase):
+class BuildspecDockerbuildFile(FileBase):
     """
-    Class for creating a single buildspec file
+    Class for creating a single buildspec file that
+    - logs into AWS ECR
+    - builds Docker image
+    - pushes Docker image to ECR
     """
 
     def __init__(self, image: DockerImage, buildspec_version: str = "0.2"):
@@ -100,7 +108,7 @@ class BuildspecFile(FileBase):
             "phases": phases,
             "artifacts": imagedefinitions_filename,
         }
-
+        self.image = image
         self._imagedefinitions = imagedefinitions
         self._phases = phases
         self._document = document
@@ -108,6 +116,10 @@ class BuildspecFile(FileBase):
     @property
     def document(self):
         return self._document
+
+    @property
+    def filepath(self):
+        return f"buildspec/{self.image.name}/buildspec-dockerbuild-{self.image.environment}.yml"
 
 
 class ContainerDefinitionsFile:
@@ -146,11 +158,16 @@ class ContainerDefinitionsFile:
                 # "cpu": 0,
             }
         ]
+        self.deployment = deployment
         self._document = tasks
 
     @property
     def document(self):
         return self._document
+
+    @property
+    def filepath(self):
+        return f"terraform/task_definitions/{self.deployment.image.name}_{self.deployment.image.environment}.json"
 
 
 class DockerComposeFile:
@@ -172,12 +189,17 @@ class DockerComposeFile:
                 image.name: {
                     "build": {"context": build_context, "dockerfile": image.filename},
                     "image": image.uri,
-                    # "environment": [f"RUNTIME_ENVIRONMENT=production"],
+                    "environment": [f"RUNTIME_ENVIRONMENT={image.environment}"],
                 }
             },
         }
+        self.image = image
         self._document = services
 
     @property
     def document(self):
         return self._document
+
+    @property
+    def filepath(self):
+        return f"docker-compose-{self.image.name}-{self.image.environment}.yml"
