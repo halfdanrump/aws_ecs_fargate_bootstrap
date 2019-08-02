@@ -134,3 +134,28 @@ class ContainerDefinitionsFile:
     @property
     def document(self):
         return self._document
+
+
+class DockerComposeFile:
+    """
+    The compose files are just used in the buildspec. It's possible that
+    I won't need this class in the future, but now I'm just modelling my
+    current setup.
+    """
+
+    def __init__(self, image: DockerImage, compose_version: str = "3.2"):
+        services = {
+            "version": compose_version,
+            "services": {
+                image.name: {
+                    "build": {"context": "containers/", "dockerfile": image.filename},
+                    "image": image.uri,
+                    # "environment": [f"RUNTIME_ENVIRONMENT=production"],
+                }
+            },
+        }
+        self._document = services
+
+    @property
+    def document(self):
+        return self._document
