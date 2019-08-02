@@ -74,3 +74,41 @@ class BuildspecFile:
         filepath = os.path.join(folder, filename)
         with open(filepath, "rw") as f:
             f.write(yaml.dump(self.document))
+
+
+class ContainerDefinitionsFile:
+    def __init__(self, deployment: ContainerDeployment):
+        """
+        Defines a task to be run in ecs in `region`.
+        Logs are sent to `awslogs_group` in CloudWatch.
+        """
+        tasks = [
+            {
+                "name": deployment.image.name,
+                "image": deployment.image.uri,
+                "environment": [
+                    {
+                        "name": "RUNTIME_ENVIRONMENT",
+                        "value": deployment.image.environment,
+                    }
+                ],
+                "essential": deployment.essential,
+                "dockerLabels": {
+                    "name": deployment.image.name,
+                    "description": deployment.image.description,
+                },
+                "logConfiguration": {
+                    "logDriver": "awslogs",
+                    "options": {
+                        "awslogs-group": deployment.awslogs_group,
+                        "awslogs-region": deployment.region,
+                        "awslogs-stream-prefix": "ecs",
+                    },
+                }
+                ### Not sure if the below three lines are necessary
+                # "entryPoint": None,
+                # "command": None,
+                # "cpu": 0,
+            }
+        ]
+        self.tasks = tasks
