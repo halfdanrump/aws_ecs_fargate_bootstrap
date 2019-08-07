@@ -25,6 +25,10 @@ class FileBase(abc.ABC):
             dumped = yaml.dump(self.document, default_flow_style=False)
         elif self.filetype == FileType.json:
             dumped = json.dumps(self.document)
+        elif self.filetype == FileType.dockerfile:
+            return self.document
+        else:
+            raise NotImplementedError()
         return dumped
 
     def write(self, dumped: str):
