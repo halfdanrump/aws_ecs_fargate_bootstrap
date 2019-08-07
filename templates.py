@@ -47,6 +47,7 @@ name = "pypi"
 
 [packages]
 PyYAML = "==3.13"
+sentry-sdk = "==0.7.14"
 
 [requires]
 python_version = "{{ python_version }}"
