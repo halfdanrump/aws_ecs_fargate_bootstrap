@@ -6,6 +6,8 @@ from typing import List, Tuple
 class FileType(IntEnum):
     yaml = 1
     json = 2
+    dockerfile = 3
+    python = 4
 
 
 @dataclass
@@ -37,7 +39,9 @@ class DockerImage:
     name: str
     environment: str
     description: str
+    script_name: str
     ecr_endpoint: str
+    python_version: str = "3.7.4"
     tag: str = "latest"
 
     @property
