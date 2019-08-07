@@ -38,6 +38,20 @@ CMD python -m services.{{ image.name }}.{{ image.script_name }}
 """
 )
 
+pipfile_template = Template(
+    """
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+PyYAML = "==3.13"
+
+[requires]
+python_version = "{{ image.python_version }}"
+"""
+)
 
 scheduled_task_template = Template(
     """
