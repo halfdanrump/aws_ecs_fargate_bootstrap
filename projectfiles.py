@@ -40,11 +40,14 @@ class FileBase(abc.ABC):
 
     def write(self, dumped: str):
         folder, filename = os.path.split(self.filepath)
-        print(f"Writing file {self.filepath}")
-        if folder:
-            os.makedirs(folder, exist_ok=True)
-        with open(self.filepath, "w") as f:
-            f.write(dumped)
+        if self.overwrite_ok:
+            if folder:
+                os.makedirs(folder, exist_ok=True)
+            print(f"Writing file {self.filepath}")
+            with open(self.filepath, "w") as f:
+                f.write(dumped)
+        else:
+            print(f"Will not overwrite {self.filepath}")
 
     @property
     @abc.abstractmethod
@@ -59,6 +62,11 @@ class FileBase(abc.ABC):
     @property
     @abc.abstractmethod
     def filetype(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def overwrite_ok(self) -> bool:
         pass
 
 
@@ -76,6 +84,7 @@ class BuildspecDockerbuildFile(FileBase):
     """
 
     filetype = FileType.yaml
+    overwrite_ok = True
 
     def __init__(self, task: EcsTask, buildspec_version: str = "0.2"):
         """
@@ -129,6 +138,7 @@ class BuildspecDockerbuildFile(FileBase):
 class ContainerDefinitionsFile(FileBase):
 
     filetype = FileType.json
+    overwrite_ok = True
 
     def __init__(self, task: EcsTask):
         """
@@ -187,6 +197,7 @@ class DockerComposeFile(FileBase):
     """
 
     filetype = FileType.yaml
+    overwrite_ok = True
 
     def __init__(
         self,
@@ -224,11 +235,13 @@ class DockerComposeFile(FileBase):
 
 @dataclass
 class DockerFile(FileBase):
+
     image: DockerImage
     script_name: str = "main"
     python_version: str = "3.7.4"
 
     filetype = FileType.dockerfile
+    overwrite_ok = True
     dockerfile = dockerfile_template
 
     @property
@@ -246,6 +259,7 @@ class Pipfile(FileBase):
     python_version: str = "3.7"
 
     filetype = FileType.pipfile
+    overwrite_ok = False
     pipfile = pipfile_template
 
     @property
