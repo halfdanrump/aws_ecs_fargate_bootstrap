@@ -49,7 +49,7 @@ name = "pypi"
 PyYAML = "==3.13"
 
 [requires]
-python_version = "{{ image.python_version }}"
+python_version = "{{ python_version }}"
 """
 )
 
