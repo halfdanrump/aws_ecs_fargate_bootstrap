@@ -9,6 +9,7 @@ class FileType(IntEnum):
     dockerfile = 3
     pipfile = 4
     python = 5
+    makefile = 6
 
 
 @dataclass

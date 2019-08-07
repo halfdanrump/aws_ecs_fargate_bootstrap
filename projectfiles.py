@@ -3,6 +3,7 @@ import json
 import yaml
 import os
 from dataclasses import dataclass
+from typing import List
 
 from jinja2 import Template
 
@@ -18,6 +19,7 @@ from templates import (
     dockerfile_template,
     pipfile_template,
     python_batch_script,
+    makefile_template,
     scheduled_task_template,
     cicd_template,
 )
@@ -33,7 +35,12 @@ class FileBase(abc.ABC):
             dumped = yaml.dump(self.document, default_flow_style=False)
         elif self.filetype == FileType.json:
             dumped = json.dumps(self.document)
-        elif self.filetype in [FileType.dockerfile, FileType.pipfile, FileType.python]:
+        elif self.filetype in [
+            FileType.dockerfile,
+            FileType.pipfile,
+            FileType.python,
+            FileType.makefile,
+        ]:
             return self.document
         else:
             raise NotImplementedError()
@@ -287,6 +294,23 @@ class PythonScriptFile(FileBase):
     @property
     def filepath(self):
         return f"containers/{self.image.name}/{self.image.script_name}.py"
+
+
+@dataclass
+class MakeFile(FileBase):
+    tasks: List[EcsTask]
+
+    filetype = FileType.makefile
+    overwrite_ok = True
+    template = makefile_template
+
+    @property
+    def document(self):
+        return self.template.render(tasks=self.tasks)
+
+    @property
+    def filepath(self):
+        return f"Makefile"
 
 
 @dataclass
