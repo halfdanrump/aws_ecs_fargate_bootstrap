@@ -83,6 +83,17 @@ if __name__ == "__main__":
 """
 )
 
+makefile_template = Template(
+    """
+lock_dependencies:
+    {% for task in tasks %}
+        {% for deployment in task.container_deployments %}
+\t\tcd containers/{{ deployment.image.name }} && pipenv install
+        {% endfor %}
+    {% endfor %}
+"""
+)
+
 scheduled_task_template = Template(
     """
 module "scheduled_task" {
