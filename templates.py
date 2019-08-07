@@ -54,6 +54,35 @@ python_version = "{{ python_version }}"
 """
 )
 
+python_batch_script = Template(
+    """
+from sentry_sdk import capture_exception
+from sentry_sdk import init as init_sentry
+
+from ..modules.config import load_config
+from ..modules.logger import Logger, LoggerName
+
+
+def main():
+    raise NotImplementedError("You must implement this.")
+
+if __name__ == "__main__":
+    config = load_config(folder_name="zendishes")
+    init_sentry(config["sentry_dsn"])
+    try:
+        logger = Logger(config=config["logging"], default_loggers=[LoggerName.stdout])
+        logger.info("running {{ image.name }} ")
+        main()
+        logger.info("done")
+    except Exception as e:
+        # send error to sentry
+        capture_exception(e)
+
+        # send error to slack
+        logger.error(e, LoggerName.slack)
+"""
+)
+
 scheduled_task_template = Template(
     """
 module "scheduled_task" {
