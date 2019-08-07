@@ -1,5 +1,6 @@
 from enum import IntEnum
 from dataclasses import dataclass
+from typing import List
 
 
 class FileType(IntEnum):
@@ -9,6 +10,10 @@ class FileType(IntEnum):
 
 @dataclass
 class DockerImage:
+    """
+    Data for a single Docker image
+    """
+
     name: str
     environment: str
     description: str
@@ -25,23 +30,48 @@ class DockerImage:
 
 
 @dataclass
+class ContainerDeployment:
+    """
+    A container deployment specifies how a single Docker image is deployed
+    """
+
+    # TODO add support for multiple Docker images
+    image: DockerImage
+    essential: bool = True
+    cpu: int
+    memory: int
+
+    @property
+    def awslogs_group(self):
+        return f"/aws/ecs/{self.name}/{self.image.name}/{self.image.environment}"
+
+
+@dataclass
+class EcsTask:
+    """
+    A task is one or more container deployments
+    """
+
+    name: str
+    containers: List[ContainerDeployment]
+    subnets: List[str] = []
+    security_groups: List[str] = []
+
+
+@dataclass
 class Project:
+    """
+    A project specifies where tasks are deployed
+    A project contains one or more tasks
+    """
+
     account_id: str
     name: str
     region: str
     vpc_name: str
+    ecs_cluster_arn: str
+    tasks: List[EcsTask]
 
     @property
     def ecr_endpoint(self):
         return f"{self.account_id}.dkr.ecr.{self.region}.amazonaws.com"
-
-
-@dataclass
-class ContainerDeployment:
-    image: DockerImage
-    project: Project
-    essential: bool = True
-
-    @property
-    def awslogs_group(self):
-        return f"/aws/ecs/{self.project.vpc_name}/{self.image.name}/{self.image.environment}"
