@@ -25,7 +25,7 @@ RUN mkdir -p services/{{ image.name }}
 # VOLUME /workdir/{{ volume_name }}
 
 # copy app files
-COPY {{ image.name }}/annoy_async.py services/{{ image.name }}/
+COPY {{ image.name }}/*.py services/{{ image.name }}/
 COPY modules services/modules
 
 LABEL maintainer = "Halfdan Rump <halfdan.rump@vuzz.com>"
@@ -86,11 +86,16 @@ if __name__ == "__main__":
 makefile_template = Template(
     """
 lock_dependencies:
-    {% for task in tasks %}
-        {% for deployment in task.container_deployments %}
+{% for task in tasks %}
+{% for deployment in task.container_deployments %}
 \t\tcd containers/{{ deployment.image.name }} && pipenv install
-        {% endfor %}
-    {% endfor %}
+{% endfor %}
+{% endfor %}
+
+build_docker:
+{% for task in tasks %}
+\t\tdocker-compose -f docker-compose-{{ task.name }}-production.yml build
+{% endfor %}
 """
 )
 
