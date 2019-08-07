@@ -1,18 +1,8 @@
 from pprint import pprint
 
-from projectdata import (
-    EcsTask,
-    # Project,
-    ProjectConfig,
-    DockerImage,
-    ContainerDeployment,
-)
+from projectdata import EcsTask, ProjectConfig, DockerImage, ContainerDeployment
 
-# from projectfiles import (
-#     DockerComposeFile,
-#     BuildspecDockerbuildFile,
-#     ContainerDefinitionsFile,
-# )
+from project import Project
 
 project_config = ProjectConfig(
     account_id="211367837384",
@@ -32,10 +22,14 @@ annoy_image = DockerImage(
 
 
 # # then prepare data required for deployment
-annoy_deployment = ContainerDeployment(image=annoy_image, cpu=512, memory=2048)
+annoy_deployment = ContainerDeployment(
+    image=annoy_image, task_name="slimdish", cpu=512, memory=2048
+)
 
 task = EcsTask(
-    name="simdish",
+    name="slimdish",
+    environment="production",
+    region=project_config.region,
     container_deployments=[annoy_deployment],
     subnets=["subnet1", "subnet2"],
     security_groups=["sg1", "sg2"],
@@ -43,11 +37,9 @@ task = EcsTask(
 #
 #
 # # first we setup the project data
-# project = Project(config=project_config, tasks=[task])
+project = Project(config=project_config, tasks=[task])
 
-
-#
-
+project.make_files()
 
 # print(project)
 # print(image)
