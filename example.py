@@ -1,12 +1,11 @@
 from pprint import pprint
+from projectdata import Project, ContainerDeployment, DockerImage
 from projectfiles import (
-    ContainerDeployment,
-    Project,
-    DockerImage,
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
 )
+
 
 # first we setup the project data
 project = Project(
@@ -44,6 +43,7 @@ compose_file = DockerComposeFile(image=image)
 
 buildspec.write(
     buildspec.dump()
+    # TODO find a nicer way to do this... Maybe with YAML dump options?
     .replace("'printf", "printf")
     .replace("''", "'")
     .replace("json'", "json")
