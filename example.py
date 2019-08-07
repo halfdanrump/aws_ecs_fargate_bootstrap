@@ -13,24 +13,38 @@ project_config = ProjectConfig(
 
 
 # then prepare data required for Docker image
+environment = "production"
+
 annoy_image = DockerImage(
     name="annoy",
-    environment="production",
+    environment=environment,
     description="Runs annoy service",
     ecr_endpoint=project_config.ecr_endpoint,
 )
-
 
 # # then prepare data required for deployment
 annoy_deployment = ContainerDeployment(
     image=annoy_image, task_name="slimdish", cpu=512, memory=2048
 )
 
+d2v_image = DockerImage(
+    name="d2v",
+    environment=environment,
+    description="Runs d2v service",
+    ecr_endpoint=project_config.ecr_endpoint,
+)
+
+# # then prepare data required for deployment
+d2v_deployment = ContainerDeployment(
+    image=d2v_image, task_name="slimdish", cpu=512, memory=2048
+)
+
+
 task = EcsTask(
     name="slimdish",
-    environment="production",
+    environment=environment,
     region=project_config.region,
-    container_deployments=[annoy_deployment],
+    container_deployments=[annoy_deployment, d2v_deployment],
     subnets=["subnet1", "subnet2"],
     security_groups=["sg1", "sg2"],
 )
