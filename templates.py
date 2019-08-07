@@ -15,8 +15,8 @@ RUN mkdir -p data/
 RUN pip install --upgrade pip
 RUN pip install --upgrade pipenv
 
-COPY {{ container_name }}/Pipfile /workdir/
-COPY {{ container_name }}/Pipfile.lock /workdir/
+COPY {{ image.name }}/Pipfile /workdir/
+COPY {{ image.name }}/Pipfile.lock /workdir/
 
 RUN pipenv install --ignore-pipfile --deploy --system
 
@@ -67,7 +67,7 @@ def main():
     raise NotImplementedError("You must implement this.")
 
 if __name__ == "__main__":
-    config = load_config(folder_name="zendishes")
+    config = load_config(folder_name={{ image.name }})
     init_sentry(config["sentry_dsn"])
     try:
         logger = Logger(config=config["logging"], default_loggers=[LoggerName.stdout])

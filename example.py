@@ -18,6 +18,7 @@ environment = "production"
 annoy_image = DockerImage(
     name="annoy",
     environment=environment,
+    script_name="annoy_async",
     description="Runs annoy service",
     ecr_endpoint=project_config.ecr_endpoint,
 )
@@ -30,6 +31,7 @@ annoy_deployment = ContainerDeployment(
 d2v_image = DockerImage(
     name="d2v",
     environment=environment,
+    script_name="d2v_async",
     description="Runs d2v service",
     ecr_endpoint=project_config.ecr_endpoint,
 )
