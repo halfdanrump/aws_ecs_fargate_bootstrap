@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from jinja2 import Template
 
 from projectdata import (
-    Project,
+    EcsTask,
     ProjectConfig,
     ContainerDeployment,
     DockerImage,
@@ -66,17 +66,20 @@ class BuildspecDockerbuildFile(FileBase):
 
     filetype = FileType.yaml
 
-    def __init__(self, image: DockerImage, buildspec_version: str = "0.2"):
+    def __init__(self, task: EcsTask, buildspec_version: str = "0.2"):
         """
         Args:
             name: name of the project
             environment: deployment environment, typically `production` or `staging`
         """
-        name, environment = image.name, image.environment
+        name, environment = task.name, task.environment
 
         docker_compose_filename = f"docker-compose-{name}-{environment}-fargate.yml"
         imagedefinitions_filename = f"imagedefinitions_{name}-{environment}.json"
-        imagedefinitions = [{"name": f"{name}", "imageUri": image.uri}]
+        imagedefinitions = [
+            {"name": f"{name}", "imageUri": deployment.image.uri}
+            for deployment in task.container_deployments
+        ]
 
         phases = {
             "pre_build": {
@@ -98,7 +101,7 @@ class BuildspecDockerbuildFile(FileBase):
             "phases": phases,
             "artifacts": imagedefinitions_filename,
         }
-        self.image = image
+        self.task = task
         self._imagedefinitions = imagedefinitions
         self._phases = phases
         self._document = document
@@ -116,13 +119,12 @@ class ContainerDefinitionsFile(FileBase):
 
     filetype = FileType.json
 
-    def __init__(self, deployment: ContainerDeployment):
+    def __init__(self, task: EcsTask):
         """
         Defines a task to be run in ecs in `region`.
         Logs are sent to `awslogs_group` in CloudWatch.
         """
         # TODO add support for custom Docker tags
-        # TODO add support for multiple Docker images
         tasks = [
             {
                 "name": deployment.image.name,
@@ -143,7 +145,7 @@ class ContainerDefinitionsFile(FileBase):
                     "logDriver": "awslogs",
                     "options": {
                         "awslogs-group": deployment.awslogs_group,
-                        "awslogs-region": deployment.project.region,
+                        "awslogs-region": task.region,
                         "awslogs-stream-prefix": "ecs",
                     },
                 }
@@ -152,8 +154,9 @@ class ContainerDefinitionsFile(FileBase):
                 # "command": None,
                 # "cpu": 0,
             }
+            for deployment in task.container_deployments
         ]
-        self.deployment = deployment
+        self.task = task
         self._document = tasks
 
     @property
@@ -176,21 +179,27 @@ class DockerComposeFile(FileBase):
 
     def __init__(
         self,
-        image: DockerImage,
+        task: EcsTask,
         build_context: str = "containers/",  # TODO remove default value. Should be managed be abstraction.
         compose_version: str = "3.2",
     ):
         services = {
             "version": compose_version,
             "services": {
-                image.name: {
-                    "build": {"context": build_context, "dockerfile": image.filename},
-                    "image": image.uri,
-                    "environment": [f"RUNTIME_ENVIRONMENT={image.environment}"],
+                deployment.image.name: {
+                    "build": {
+                        "context": build_context,
+                        "dockerfile": deployment.image.filename,
+                    },
+                    "image": deployment.image.uri,
+                    "environment": [
+                        f"RUNTIME_ENVIRONMENT={deployment.image.environment}"
+                    ],
                 }
+                for deployment in task.container_deployments
             },
         }
-        self.image = image
+        self.task = task
         self._document = services
 
     @property

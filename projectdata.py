@@ -15,9 +15,9 @@ class ProjectConfig:
     """
 
     account_id: str
-    region: str
+    region: str  # TODO move to EcsTask?
     vpc_name: str
-    ecs_cluster_name: str
+    ecs_cluster_name: str  # TODO move to EcsTask?
 
     @property
     def ecr_endpoint(self):
@@ -56,6 +56,7 @@ class ContainerDeployment:
     """
 
     # TODO add support for multiple Docker images
+    task_name: str
     image: DockerImage
     cpu: int
     memory: int
@@ -63,11 +64,9 @@ class ContainerDeployment:
 
     @property
     def awslogs_group(self):
-        return f"/aws/ecs/{self.name}/{self.image.name}/{self.image.environment}"
+        return f"/aws/ecs/{self.task_name}/{self.image.name}/{self.image.environment}"
 
 
-#
-#
 @dataclass
 class EcsTask:
     """
@@ -75,21 +74,8 @@ class EcsTask:
     """
 
     name: str
+    environment: str
+    region: str
     container_deployments: List[ContainerDeployment]
     subnets: List[str] = ()
     security_groups: Tuple[str] = ()
-
-
-#
-#
-#
-#
-# @dataclass
-# class Project:
-#     """
-#     A project specifies where tasks are deployed
-#     A project contains one or more tasks
-#     """
-#
-#     config: ProjectConfig
-#     tasks: Tuple[EcsTask]
