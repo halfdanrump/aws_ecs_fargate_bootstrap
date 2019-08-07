@@ -4,6 +4,7 @@ from projectdata import ProjectConfig, EcsTask
 from projectfiles import (
     DockerFile,
     Pipfile,
+    PythonScriptFile,
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
@@ -28,18 +29,18 @@ class Project:
     def make_files(self):
         files = []
         for task in self.tasks:
-            print("making compose files")
+            # print("making compose files")
             files.append(DockerComposeFile(task=task))
-            print("making dockerbuild buildspec file")
+            # print("making dockerbuild buildspec file")
             files.append(BuildspecDockerbuildFile(task=task))
-            print("making container definitions file")
+            # print("making container definitions file")
             files.append(ContainerDefinitionsFile(task=task))
 
             # Generate Dockerfiles and initiate script files
             for deployment in task.container_deployments:
                 files.append(DockerFile(deployment.image))
                 files.append(Pipfile(deployment.image))
+                files.append(PythonScriptFile(deployment.image))
 
         for file in files:
-            print(file)
             file.write(file.dump())

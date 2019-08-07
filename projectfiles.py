@@ -17,6 +17,7 @@ from projectdata import (
 from templates import (
     dockerfile_template,
     pipfile_template,
+    python_batch_script,
     scheduled_task_template,
     cicd_template,
 )
@@ -32,7 +33,7 @@ class FileBase(abc.ABC):
             dumped = yaml.dump(self.document, default_flow_style=False)
         elif self.filetype == FileType.json:
             dumped = json.dumps(self.document)
-        elif self.filetype in [FileType.dockerfile, FileType.pipfile]:
+        elif self.filetype in [FileType.dockerfile, FileType.pipfile, FileType.python]:
             return self.document
         else:
             raise NotImplementedError()
@@ -269,6 +270,23 @@ class Pipfile(FileBase):
     @property
     def filepath(self):
         return f"containers/{self.image.name}/Pipfile"
+
+
+@dataclass
+class PythonScriptFile(FileBase):
+    image: DockerImage
+
+    filetype = FileType.python
+    overwrite_ok = False
+    script = python_batch_script
+
+    @property
+    def document(self):
+        return self.script.render(image=self.image)
+
+    @property
+    def filepath(self):
+        return f"containers/{self.image.name}/{self.image.script_name}.py"
 
 
 @dataclass
