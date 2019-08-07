@@ -7,7 +7,8 @@ class FileType(IntEnum):
     yaml = 1
     json = 2
     dockerfile = 3
-    python = 4
+    pipfile = 4
+    python = 5
 
 
 @dataclass

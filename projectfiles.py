@@ -14,7 +14,12 @@ from projectdata import (
     FileType,
 )
 
-from templates import dockerfile_template, scheduled_task_template, cicd_template
+from templates import (
+    dockerfile_template,
+    pipfile_template,
+    scheduled_task_template,
+    cicd_template,
+)
 
 
 class FileBase(abc.ABC):
@@ -27,7 +32,7 @@ class FileBase(abc.ABC):
             dumped = yaml.dump(self.document, default_flow_style=False)
         elif self.filetype == FileType.json:
             dumped = json.dumps(self.document)
-        elif self.filetype == FileType.dockerfile:
+        elif self.filetype in [FileType.dockerfile, FileType.pipfile]:
             return self.document
         else:
             raise NotImplementedError()
@@ -233,6 +238,23 @@ class DockerFile(FileBase):
     @property
     def filepath(self):
         return f"containers/Dockerfile-{self.image.name}"
+
+
+@dataclass
+class Pipfile(FileBase):
+    image: DockerImage
+    python_version: str = "3.7"
+
+    filetype = FileType.pipfile
+    pipfile = pipfile_template
+
+    @property
+    def document(self):
+        return self.pipfile.render(python_version=self.python_version)
+
+    @property
+    def filepath(self):
+        return f"containers/{self.image.name}/Pipfile"
 
 
 @dataclass
