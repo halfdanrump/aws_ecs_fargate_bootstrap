@@ -34,4 +34,5 @@ class Project:
             files.append(ContainerDefinitionsFile(task=task))
 
         for file in files:
-            print(file.dump())
+            print(file)
+            file.write(file.dump())

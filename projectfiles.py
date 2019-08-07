@@ -112,7 +112,7 @@ class BuildspecDockerbuildFile(FileBase):
 
     @property
     def filepath(self):
-        return f"buildspec/{self.image.name}/buildspec-dockerbuild-{self.image.environment}.yml"
+        return f"buildspec/buildspec-dockerbuild-{self.task.name}-{self.task.environment}.yml"
 
 
 class ContainerDefinitionsFile(FileBase):
@@ -165,7 +165,7 @@ class ContainerDefinitionsFile(FileBase):
 
     @property
     def filepath(self):
-        return f"terraform/container_definitions/{self.deployment.image.name}_{self.deployment.image.environment}.json"
+        return f"terraform/container_definitions/container_definitions-{self.task.name}-{self.task.environment}.json"
 
 
 class DockerComposeFile(FileBase):
@@ -208,7 +208,7 @@ class DockerComposeFile(FileBase):
 
     @property
     def filepath(self):
-        return f"docker-compose-{self.image.name}-{self.image.environment}.yml"
+        return f"docker-compose-{self.task.name}-{self.task.environment}.yml"
 
 
 @dataclass
