@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Tuple
 from projectdata import ProjectConfig, EcsTask
 from projectfiles import (
+    DockerFile,
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
@@ -32,6 +33,10 @@ class Project:
             files.append(BuildspecDockerbuildFile(task=task))
             print("making container definitions file")
             files.append(ContainerDefinitionsFile(task=task))
+
+            # Generate Dockerfiles and initiate script files
+            for deployment in task.container_deployments:
+                files.append(DockerFile(deployment.image))
 
         for file in files:
             print(file)
