@@ -5,6 +5,7 @@ from projectfiles import (
     DockerFile,
     Pipfile,
     PythonScriptFile,
+    MakeFile,
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
@@ -28,6 +29,7 @@ class Project:
 
     def make_files(self):
         files = []
+        files.append(MakeFile(self.tasks))
         for task in self.tasks:
             # print("making compose files")
             files.append(DockerComposeFile(task=task))
