@@ -3,6 +3,7 @@ from typing import Tuple
 from projectdata import ProjectConfig, EcsTask
 from projectfiles import (
     DockerFile,
+    Pipfile,
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
@@ -37,6 +38,7 @@ class Project:
             # Generate Dockerfiles and initiate script files
             for deployment in task.container_deployments:
                 files.append(DockerFile(deployment.image))
+                files.append(Pipfile(deployment.image))
 
         for file in files:
             print(file)
