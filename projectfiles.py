@@ -40,14 +40,14 @@ class FileBase(abc.ABC):
 
     def write(self, dumped: str):
         folder, filename = os.path.split(self.filepath)
-        if self.overwrite_ok:
-            if folder:
-                os.makedirs(folder, exist_ok=True)
+        if folder:
+            os.makedirs(folder, exist_ok=True)
+        if not os.path.exists(self.filepath) or self.overwrite_ok:
             print(f"Writing file {self.filepath}")
             with open(self.filepath, "w") as f:
                 f.write(dumped)
         else:
-            print(f"Will not overwrite {self.filepath}")
+            print(f"File already exists. {self.filepath}")
 
     @property
     @abc.abstractmethod
