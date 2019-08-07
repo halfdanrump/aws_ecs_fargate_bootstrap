@@ -4,7 +4,15 @@ import yaml
 import os
 from dataclasses import dataclass
 
-from projectdata import Project, ContainerDeployment, DockerImage, FileType
+from jinja2 import Template
+
+from projectdata import (
+    Project,
+    ProjectConfig,
+    ContainerDeployment,
+    DockerImage,
+    FileType,
+)
 
 
 class FileBase(abc.ABC):
@@ -41,6 +49,11 @@ class FileBase(abc.ABC):
     @abc.abstractmethod
     def filetype(self):
         pass
+
+
+class BuildspecTestFile(FileBase):
+    # TODO implement this
+    pass
 
 
 class BuildspecDockerbuildFile(FileBase):
@@ -108,6 +121,8 @@ class ContainerDefinitionsFile(FileBase):
         Defines a task to be run in ecs in `region`.
         Logs are sent to `awslogs_group` in CloudWatch.
         """
+        # TODO add support for custom Docker tags
+        # TODO add support for multiple Docker images
         tasks = [
             {
                 "name": deployment.image.name,
@@ -147,7 +162,7 @@ class ContainerDefinitionsFile(FileBase):
 
     @property
     def filepath(self):
-        return f"terraform/task_definitions/{self.deployment.image.name}_{self.deployment.image.environment}.json"
+        return f"terraform/container_definitions/{self.deployment.image.name}_{self.deployment.image.environment}.json"
 
 
 class DockerComposeFile(FileBase):
@@ -185,3 +200,98 @@ class DockerComposeFile(FileBase):
     @property
     def filepath(self):
         return f"docker-compose-{self.image.name}-{self.image.environment}.yml"
+
+
+@dataclass
+class TerraformScheduledTask:
+    deployment: ContainerDeployment
+    container_definitions_file: ContainerDefinitionsFile
+    schedule_expression: str = "rate(1 hours)"
+
+    task = Template(
+        """
+        module "scheduled_task" {
+          # source  = "./modules/scheduled_task"
+          source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
+          version               = "1.2"
+          account_id            = "{{ deployment.project.account_id }}"
+          name                  = "{{ deployment.project.name }}"
+          environment           = "{{ deployment.image.environment }}"
+          log_group_name        = "{{ deployment.project.awslogs_group }}"
+          network_mode          = "awsvpc"
+          assign_public_ip      = true
+          launch_type           = "FARGATE"
+          container_definitions = "${file("{{ self.container_definitions_file.filename }}")}"
+          schedule_expression   = "{{ schedule_expression }}"
+          cluster_arn           = "{{ deployment.project.ecs_cluster_arn }}"
+          memory                = "{{ deployment.memory }}"
+          cpu                   = "{{ deployment.cpu }}"
+          subnets               = {{ deployment.subnets }}
+          security_groups       = {{ deployment.security_groups }}
+        }
+        """
+    )
+
+    cicd = Template(
+        """
+module "zendishes_production_cicd" {
+  source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
+  name   = ""
+  account_id = "{{ project.account_id }}"
+  environment = "production"
+  github_webhook_token = "${var.github_webhook_token}"
+  git_repo = "batch_scripts_docker"
+  git_branch = "zendishes-master"
+  unittest_buildspec_path = "buildspec/zendishes/buildspec-unittest-allenvs.yml"
+  dockerbuild_timeout = "15"
+  dockerbuild_buildspec_path = "buildspec/zendishes/buildspec-dockerbuild-production.yml"
+}
+        """
+    )
+
+    def render(self):
+        # TODO in the case of multiple Docker images, iterate over images and
+        # render template for each zendishes_image
+        return self.task.render(deployment=self.deployment)
+
+
+"""
+module "scheduled_task" {
+  # source  = "./modules/scheduled_task"
+  source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
+  version               = "1.2"
+  account_id            = "211367837384"
+  name                  = "zendishes"
+  environment           = "production"
+  log_group_name        = "/aws/ecs/vpc_central/zendishes/production"
+  network_mode          = "awsvpc"
+  assign_public_ip      = true
+  launch_type           = "FARGATE"
+  container_definitions = "${file("container_definitions/zendishes_production.json")}"
+  # schedule_expression   = "cron(0/10 * * * ? 0)" # see https://crontab.guru/
+  schedule_expression   = "rate(5 minutes)" # see https://crontab.guru/
+  cluster_arn           = "${local.persistent_cluster_arn}"
+  memory                = "512"
+  cpu                   = "256"
+  subnets               = ["${local.subnet_db_b}",
+                           "${local.subnet_db_c}",
+                           "${local.subnet_natgw}"]
+  security_groups       = ["${local.security_group_db}",
+                           "${local.security_group_nat}"]
+
+}
+
+module "zendishes_production_cicd" {
+  source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
+  name   = "zendishes"
+  account_id = "211367837384"
+  environment = "production"
+  github_webhook_token = "${var.github_webhook_token}"
+  git_repo = "batch_scripts_docker"
+  git_branch = "zendishes-master"
+  unittest_buildspec_path = "buildspec/zendishes/buildspec-unittest-allenvs.yml"
+  dockerbuild_timeout = "15"
+  dockerbuild_buildspec_path = "buildspec/zendishes/buildspec-dockerbuild-production.yml"
+}
+
+"""

@@ -1,11 +1,31 @@
 from enum import IntEnum
 from dataclasses import dataclass
-from typing import List
+from typing import List, Tuple
 
 
 class FileType(IntEnum):
     yaml = 1
     json = 2
+
+
+@dataclass
+class ProjectConfig:
+    """
+
+    """
+
+    account_id: str
+    region: str
+    vpc_name: str
+    ecs_cluster_name: str
+
+    @property
+    def ecr_endpoint(self):
+        return f"{self.account_id}.dkr.ecr.{self.region}.amazonaws.com"
+
+    @property
+    def ecs_cluster_arn(self):
+        return f"arn:aws:ecs:{self.region}:{self.account_id}:cluster/{self.ecs_cluster_name}"
 
 
 @dataclass
@@ -37,15 +57,17 @@ class ContainerDeployment:
 
     # TODO add support for multiple Docker images
     image: DockerImage
-    essential: bool = True
     cpu: int
     memory: int
+    essential: bool = True
 
     @property
     def awslogs_group(self):
         return f"/aws/ecs/{self.name}/{self.image.name}/{self.image.environment}"
 
 
+#
+#
 @dataclass
 class EcsTask:
     """
@@ -53,25 +75,21 @@ class EcsTask:
     """
 
     name: str
-    containers: List[ContainerDeployment]
-    subnets: List[str] = []
-    security_groups: List[str] = []
+    container_deployments: List[ContainerDeployment]
+    subnets: List[str] = ()
+    security_groups: Tuple[str] = ()
 
 
-@dataclass
-class Project:
-    """
-    A project specifies where tasks are deployed
-    A project contains one or more tasks
-    """
-
-    account_id: str
-    name: str
-    region: str
-    vpc_name: str
-    ecs_cluster_arn: str
-    tasks: List[EcsTask]
-
-    @property
-    def ecr_endpoint(self):
-        return f"{self.account_id}.dkr.ecr.{self.region}.amazonaws.com"
+#
+#
+#
+#
+# @dataclass
+# class Project:
+#     """
+#     A project specifies where tasks are deployed
+#     A project contains one or more tasks
+#     """
+#
+#     config: ProjectConfig
+#     tasks: Tuple[EcsTask]
