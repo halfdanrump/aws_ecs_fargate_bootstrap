@@ -58,11 +58,13 @@ class Project:
         for file in files:
             file.write(file.dump())
 
-    def post_setup(self):
+    def post_setup(self, build: bool = False):
         """
         - copy fles from `files/` to correct destinations
         - build docker images
         """
         subprocess.run("cp -r files/modules containers/", shell=True, check=True)
-        subprocess.run("make lock_dependencies", shell=True, check=True)
-        subprocess.run("make build_docker", shell=True, check=True)
+        subprocess.run("cp -r files/terraform/* terraform/", shell=True, check=True)
+        if build:
+            subprocess.run("make lock_dependencies", shell=True, check=True)
+            subprocess.run("make build_docker", shell=True, check=True)
