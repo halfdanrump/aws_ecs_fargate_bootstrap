@@ -58,7 +58,7 @@ class Project:
         for file in files:
             file.write(file.dump())
 
-    def post_setup(self, build: bool = False):
+    def post_setup(self):
         """
         - copy fles from `files/` to correct destinations
         - build docker images
@@ -71,6 +71,12 @@ class Project:
                 shell=True,
                 check=True,
             )
-        if build:
-            subprocess.run("make lock_dependencies", shell=True, check=True)
-            subprocess.run("make build_docker", shell=True, check=True)
+
+    def build(self):
+        subprocess.run("make lock_dependencies", shell=True, check=True)
+        subprocess.run("make build_docker", shell=True, check=True)
+
+    def provision(self):
+        # TODO: Fix this
+        subprocess.run("cd terraform && terraform init")
+        # subprocess.run("make tfapply")
