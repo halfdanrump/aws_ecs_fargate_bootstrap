@@ -138,6 +138,20 @@ module "fargate-scheduled-task-multicontainer" {
     security_groups       = {{ security_groups }}
 }
 
+### aws codepipeline CICD
+
+module "zendishes_production_cicd" {
+  source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
+  name   = "{{ task.name }}"
+  account_id = "{{ project_config.account_id }}"
+  environment = "{{ task.name }}"
+  github_webhook_token = "${var.github_webhook_token}"
+  git_repo = "{{ project_config.git_repo_name}}"
+  git_branch = "{{ project_config.git_repo_branch }}"
+  unittest_buildspec_path = "buildspec/buildspec-unittest-{{ task.name }}-allenvs.yml"
+  dockerbuild_timeout = "15"
+  dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-{{ task.name }}-{{ task.environment }}.yml"
+}
 
 """
 )
