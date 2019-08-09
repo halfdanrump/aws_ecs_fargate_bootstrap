@@ -101,6 +101,15 @@ build_docker:
 
 scheduled_task_template = Template(
     """
+variable "log_groups" {
+  description = "Map from service name to log group name"
+  default     = {
+    {% for deployment in task.container_deployments %}
+    "{{ deployment.image.name }}" = "{{ deployment.awslogs_group }}"
+    {% endfor %}
+  }
+}
+
 module "scheduled_task" {
     source                = "./modules/scheduled_task"
     # source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
@@ -108,7 +117,7 @@ module "scheduled_task" {
     account_id            = "{{ project_config.account_id }}"
     name                  = "{{ task.name }}"
     environment           = "{{ task.environment }}"
-    log_group_name        = "{{ log_groups }}"
+    log_groups            = var.log_groups
     network_mode          = "awsvpc"
     assign_public_ip      = true
     launch_type           = "FARGATE"
