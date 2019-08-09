@@ -10,6 +10,7 @@ from projectfiles import (
     DockerComposeFile,
     BuildspecDockerbuildFile,
     ContainerDefinitionsFile,
+    TerraformScheduledTaskFile,
 )
 
 
@@ -37,13 +38,22 @@ class Project:
             # print("making dockerbuild buildspec file")
             files.append(BuildspecDockerbuildFile(task=task))
             # print("making container definitions file")
-            files.append(ContainerDefinitionsFile(task=task))
+            cdf = ContainerDefinitionsFile(task=task)
+            files.append(cdf)
 
             # Generate Dockerfiles and initiate script files
             for deployment in task.container_deployments:
                 files.append(DockerFile(deployment.image))
                 files.append(Pipfile(deployment.image))
                 files.append(PythonScriptFile(deployment.image))
+
+            files.append(
+                TerraformScheduledTaskFile(
+                    task=task,
+                    project_config=self.config,
+                    container_definitions_file=cdf,
+                )
+            )
 
         for file in files:
             file.write(file.dump())
