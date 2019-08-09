@@ -40,6 +40,7 @@ class FileBase(abc.ABC):
             FileType.pipfile,
             FileType.python,
             FileType.makefile,
+            FileType.terraform,
         ]:
             return self.document
         else:
@@ -314,19 +315,30 @@ class MakeFile(FileBase):
 
 
 @dataclass
-class TerraformScheduledTask:
-    deployment: ContainerDeployment
+class TerraformScheduledTaskFile(FileBase):
+    task: EcsTask
+    project_config: ProjectConfig
     container_definitions_file: ContainerDefinitionsFile
     schedule_expression: str = "rate(1 hours)"
 
-    task = scheduled_task_template
+    filetype = FileType.terraform
+    overwrite_ok = True
+    template = scheduled_task_template
 
-    cicd = cicd_template
+    @property
+    def document(self):
+        return self.template.render(
+            task=self.task,
+            project_config=self.project_config,
+            schedule_expression=self.schedule_expression,
+            container_definitions_filename=self.container_definitions_file.filepath,
+            subnets=json.dumps(self.task.subnets),
+            security_groups=json.dumps(self.task.security_groups),
+        )
 
-    def render(self):
-        # TODO in the case of multiple Docker images, iterate over images and
-        # render template for each zendishes_image
-        return self.task.render(deployment=self.deployment)
+    @property
+    def filepath(self):
+        return f"terraform/{self.task.name}-{self.task.environment}.tf"
 
 
 """
