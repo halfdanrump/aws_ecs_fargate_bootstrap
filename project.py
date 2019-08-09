@@ -65,6 +65,12 @@ class Project:
         """
         subprocess.run("cp -r files/modules containers/", shell=True, check=True)
         subprocess.run("cp -r files/terraform/* terraform/", shell=True, check=True)
+        for task in self.tasks:
+            subprocess.run(
+                f"cp -r files/buildspec/buildspec-unittest-allenvs.yml buildspec/buildspec-unittest-{task.name}-allenvs.yml",
+                shell=True,
+                check=True,
+            )
         if build:
             subprocess.run("make lock_dependencies", shell=True, check=True)
             subprocess.run("make build_docker", shell=True, check=True)
