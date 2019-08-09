@@ -86,16 +86,17 @@ if __name__ == "__main__":
 makefile_template = Template(
     """
 lock_dependencies:
-{% for task in tasks %}
-{% for deployment in task.container_deployments %}
+{%- for task in tasks %}
+{%- for deployment in task.container_deployments %}
 \t\tcd containers/{{ deployment.image.name }} && pipenv install
-{% endfor %}
-{% endfor %}
+{% endfor -%}
+{% endfor -%}
 
 build_docker:
-{% for task in tasks %}
+{%- for task in tasks %}
 \t\tdocker-compose -f docker-compose-{{ task.name }}-production.yml build
-{% endfor %}
+{% endfor -%}
+
 
 tfinit:
 \t\tcd terraform && terraform init
@@ -110,9 +111,9 @@ scheduled_task_template = Template(
 variable "log_groups" {
   description = "Map from service name to log group name"
   default     = {
-    {% for deployment in task.container_deployments %}
+    {% for deployment in task.container_deployments -%}
     "{{ deployment.image.name }}" = "{{ deployment.awslogs_group }}"
-    {% endfor %}
+    {% endfor -%}
   }
 }
 
