@@ -10,6 +10,7 @@ class FileType(IntEnum):
     pipfile = 4
     python = 5
     makefile = 6
+    terraform = 7
 
 
 @dataclass
@@ -64,8 +65,6 @@ class ContainerDeployment:
     # TODO add support for multiple Docker images
     task_name: str
     image: DockerImage
-    cpu: int
-    memory: int
     essential: bool = True
 
     @property
@@ -81,6 +80,8 @@ class EcsTask:
 
     name: str
     environment: str
+    cpu: int
+    memory: int
     region: str
     container_deployments: List[ContainerDeployment]
     subnets: List[str] = ()
