@@ -117,10 +117,11 @@ variable "log_groups" {
   }
 }
 
-module "scheduled_task" {
-    source                = "./modules/scheduled_task"
-    # source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
-    # version               = "1.2"
+
+
+module "fargate-scheduled-task-multicontainer" {
+    source  = "halfdanrump/fargate-scheduled-task-multicontainer/aws"
+    version = "12.6.1"
     account_id            = "{{ project_config.account_id }}"
     name                  = "{{ task.name }}"
     environment           = "{{ task.environment }}"
@@ -136,6 +137,8 @@ module "scheduled_task" {
     subnets               = {{ subnets }}
     security_groups       = {{ security_groups }}
 }
+
+
 """
 )
 
