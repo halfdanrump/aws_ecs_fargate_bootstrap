@@ -23,6 +23,8 @@ class ProjectConfig:
     region: str  # TODO move to EcsTask?
     vpc_name: str
     ecs_cluster_name: str  # TODO move to EcsTask?
+    git_repo_name: str
+    git_repo_branch: str
 
     @property
     def ecr_endpoint(self):
