@@ -102,23 +102,23 @@ build_docker:
 scheduled_task_template = Template(
     """
 module "scheduled_task" {
-    # source  = "./modules/scheduled_task"
-    source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
-    version               = "1.2"
-    account_id            = "{{ deployment.project.account_id }}"
-    name                  = "{{ deployment.project.name }}"
-    environment           = "{{ deployment.image.environment }}"
-    log_group_name        = "{{ deployment.project.awslogs_group }}"
+    source                = "./modules/scheduled_task"
+    # source                = "github.com/halfdanrump/terraform_modules/aws/scheduled_task"
+    # version               = "1.2"
+    account_id            = "{{ project_config.account_id }}"
+    name                  = "{{ task.name }}"
+    environment           = "{{ task.environment }}"
+    log_group_name        = "{{ log_groups }}"
     network_mode          = "awsvpc"
     assign_public_ip      = true
     launch_type           = "FARGATE"
-    container_definitions = "${file("{{ self.container_definitions_file.filename }}")}"
+    container_definitions = "${file("{{ container_definitions_filename }}")}"
     schedule_expression   = "{{ schedule_expression }}"
-    cluster_arn           = "{{ deployment.project.ecs_cluster_arn }}"
-    memory                = "{{ deployment.memory }}"
-    cpu                   = "{{ deployment.cpu }}"
-    subnets               = {{ deployment.subnets }}
-    security_groups       = {{ deployment.security_groups }}
+    cluster_arn           = "{{ project_config.ecs_cluster_arn }}"
+    memory                = "{{ task.memory }}"
+    cpu                   = "{{ task.cpu }}"
+    subnets               = {{ subnets }}
+    security_groups       = {{ security_groups }}
 }
 """
 )
