@@ -327,11 +327,15 @@ class TerraformScheduledTaskFile(FileBase):
 
     @property
     def document(self):
+        # create the filepath to the container definitions file
+        # so that the terraform module can read it.
+        cd_folder, cd_filename = os.path.split(self.container_definitions_file.filepath)
+        cd_filepath = os.path.join(*os.path.split(cd_folder)[1:], cd_filename)
         return self.template.render(
             task=self.task,
             project_config=self.project_config,
             schedule_expression=self.schedule_expression,
-            container_definitions_filename=self.container_definitions_file.filepath,
+            container_definitions_filename=cd_filepath,
             subnets=json.dumps(self.task.subnets),
             security_groups=json.dumps(self.task.security_groups),
         )
