@@ -96,6 +96,12 @@ build_docker:
 {% for task in tasks %}
 \t\tdocker-compose -f docker-compose-{{ task.name }}-production.yml build
 {% endfor %}
+
+tfinit:
+\t\tcd terraform && terraform init
+
+tfapply:
+\t\tcd terraform && terraform apply
 """
 )
 
