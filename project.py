@@ -58,7 +58,7 @@ class Project:
         for file in files:
             file.write(file.dump())
 
-    def post_setup(self):
+    def copy_files(self):
         """
         - copy fles from `files/` to correct destinations
         - build docker images

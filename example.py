@@ -86,5 +86,6 @@ Add a task
 project = Project(config=project_config, tasks=[task])
 
 project.make_files()
-project.post_setup()
-project.provision()
+project.copy_files()
+# project.build()
+# project.provision()
