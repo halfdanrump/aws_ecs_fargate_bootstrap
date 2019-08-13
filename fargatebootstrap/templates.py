@@ -110,7 +110,7 @@ tfapply:
 
 scheduled_task_template = Template(
     """
-variable "log_groups" {
+variable "{{ task.name }}_{{ task.environment }}_log_groups" {
   description = "Map from service name to log group name"
   default     = {
     {% for deployment in task.container_deployments -%}
@@ -127,7 +127,7 @@ module "fargate-scheduled-task-multicontainer" {
     account_id            = "{{ project_config.account_id }}"
     name                  = "{{ task.name }}"
     environment           = "{{ task.environment }}"
-    log_groups            = var.log_groups
+    log_groups            = var.{{ task.name }}_{{ task.environment }}_log_groups
     network_mode          = "awsvpc"
     assign_public_ip      = true
     launch_type           = "FARGATE"
