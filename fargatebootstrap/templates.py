@@ -96,7 +96,7 @@ lock_dependencies:
 
 build_docker:
 {%- for task in tasks %}
-\t\tdocker-compose -f docker-compose-{{ task.name }}-production.yml build
+\t\tdocker-compose -f docker-compose-{{ task.name }}-{{ task.environment }}.yml build
 {% endfor -%}
 
 
