@@ -319,7 +319,7 @@ class TerraformScheduledTaskFile(FileBase):
     task: EcsTask
     project_config: ProjectConfig
     container_definitions_file: ContainerDefinitionsFile
-    schedule_expression: str = "rate(1 hours)"
+    schedule_expression: str
 
     filetype = FileType.terraform
     overwrite_ok = True
