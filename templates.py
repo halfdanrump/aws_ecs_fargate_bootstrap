@@ -48,6 +48,8 @@ name = "pypi"
 [packages]
 PyYAML = "==3.13"
 sentry-sdk = "==0.7.14"
+slack_logger = "==0.3.1"
+progressbar2 = "==3.42.0"
 
 [requires]
 python_version = "{{ python_version }}"
