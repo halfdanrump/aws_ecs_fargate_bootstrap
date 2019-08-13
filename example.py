@@ -63,37 +63,38 @@ task = EcsTask(
 """
 Add a task
 """
-# new_environment = "staging"
-# task_name = "my_new_task"
-# new_image = DockerImage(
-#     name="new_image",
-#     environment=new_environment,
-#     script_name="main",
-#     description="Runs the new service",
-#     ecr_endpoint=project_config.ecr_endpoint,
-# )
-#
-#
-# # # then prepare data required for deployment
-# new_deployment = ContainerDeployment(
-#     image=new_image, task_name=task_name, cpu=512, memory=2048
-# )
-#
-#
-# new_task = EcsTask(
-#     name=task_name,
-#     environment=new_environment,
-#     region=project_config.region,
-#     container_deployments=[new_deployment],
-#     subnets=["subnet1", "subnet2"],
-#     security_groups=["sg1", "sg2"],
-# )
+new_environment = "staging"
+task_name = "my_new_task"
+new_image = DockerImage(
+    name="new_image",
+    environment=new_environment,
+    script_name="main",
+    description="Runs the new service",
+    ecr_endpoint=project_config.ecr_endpoint,
+)
+
+
+# # then prepare data required for deployment
+new_deployment = ContainerDeployment(image=new_image, task_name=task_name)
+
+
+new_task = EcsTask(
+    name=task_name,
+    environment=new_environment,
+    cpu=512,
+    memory=2048,
+    region=project_config.region,
+    container_deployments=[new_deployment],
+    subnets=["subnet1", "subnet2"],
+    security_groups=["sg1", "sg2"],
+)
 #
 #
 # # first we setup the project data
-project = Project(config=project_config, tasks=[task])
+project = Project(config=project_config, tasks=[task, new_task])
 
-project.make_files()
 project.copy_files()
+project.make_files()
+
 # project.build()
 # project.provision()
