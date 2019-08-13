@@ -5,15 +5,7 @@ import os
 from dataclasses import dataclass
 from typing import List
 
-from jinja2 import Template
-
-from .projectdata import (
-    EcsTask,
-    ProjectConfig,
-    ContainerDeployment,
-    DockerImage,
-    FileType,
-)
+from .projectdata import EcsTask, ProjectConfig, DockerImage, FileType
 
 from .templates import (
     dockerfile_template,
@@ -21,7 +13,6 @@ from .templates import (
     python_batch_script,
     makefile_template,
     scheduled_task_template,
-    cicd_template,
 )
 
 
