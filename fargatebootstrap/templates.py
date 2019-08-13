@@ -154,23 +154,6 @@ module "{{ task.name }}_production_cicd" {
   dockerbuild_timeout = "15"
   dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-{{ task.name }}-{{ task.environment }}.yml"
 }
-
 """
-)
-
-cicd_template = Template(
-    """
-module "zendishes_production_cicd" {
-    source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
-    name   = ""
-    account_id = "{{ project.account_id }}"
-    environment = "production"
-    github_webhook_token = "${var.github_webhook_token}"
-    git_repo = "batch_scripts_docker"
-    git_branch = "zendishes-master"
-    unittest_buildspec_path = "buildspec/zendishes/buildspec-unittest-allenvs.yml"
-    dockerbuild_timeout = "15"
-    dockerbuild_buildspec_path = "buildspec/zendishes/buildspec-dockerbuild-production.yml"
-}
-"""
+    # TODO Split CICD into a different FileClass
 )
