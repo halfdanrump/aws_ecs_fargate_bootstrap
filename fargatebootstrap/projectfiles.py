@@ -7,7 +7,7 @@ from typing import List
 
 from jinja2 import Template
 
-from projectdata import (
+from .projectdata import (
     EcsTask,
     ProjectConfig,
     ContainerDeployment,
@@ -15,7 +15,7 @@ from projectdata import (
     FileType,
 )
 
-from templates import (
+from .templates import (
     dockerfile_template,
     pipfile_template,
     python_batch_script,

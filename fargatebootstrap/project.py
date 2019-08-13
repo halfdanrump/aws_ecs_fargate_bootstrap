@@ -1,8 +1,8 @@
 import subprocess
 from dataclasses import dataclass
 from typing import Tuple
-from projectdata import ProjectConfig, EcsTask
-from projectfiles import (
+from .projectdata import ProjectConfig, EcsTask
+from .projectfiles import (
     DockerFile,
     Pipfile,
     PythonScriptFile,
