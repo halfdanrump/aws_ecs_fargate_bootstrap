@@ -1,6 +1,7 @@
 from enum import IntEnum
 from dataclasses import dataclass
 from typing import List, Tuple
+import abc
 
 
 class FileType(IntEnum):
@@ -11,6 +12,11 @@ class FileType(IntEnum):
     python = 5
     makefile = 6
     terraform = 7
+
+
+class TaskType(IntEnum):
+    scheduled = 1
+    service = 2
 
 
 @dataclass
@@ -75,7 +81,7 @@ class ContainerDeployment:
 
 
 @dataclass
-class EcsTask:
+class EcsTask(abc.ABC):
     """
     A task is one or more container deployments
     """
@@ -86,5 +92,31 @@ class EcsTask:
     memory: int
     region: str
     container_deployments: List[ContainerDeployment]
-    subnets: List[str] = ()
-    security_groups: Tuple[str] = ()
+    subnets: List[str]
+    security_groups: Tuple[str]
+
+
+@dataclass
+class EcsScheduledTask(EcsTask):
+    """
+    A scheduled task
+    """
+
+    schedule_expression: str
+    task_type = TaskType.scheduled
+
+
+# @dataclass
+# class EcsServiceTask:
+#     """
+#     A task is one or more container deployments
+#     """
+#
+#     name: str
+#     environment: str
+#     cpu: int
+#     memory: int
+#     region: str
+#     container_deployments: List[ContainerDeployment]
+#     subnets: List[str] = ()
+# security_groups: Tuple[str] = ()

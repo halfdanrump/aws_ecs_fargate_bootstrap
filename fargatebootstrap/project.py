@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Tuple
 import os
 import shutil
-from .projectdata import ProjectConfig, EcsTask
+from .projectdata import ProjectConfig, EcsTask, TaskType
 from .projectfiles import (
     DockerFile,
     Pipfile,
@@ -50,13 +50,17 @@ class Project:
                 files.append(Pipfile(deployment.image))
                 files.append(PythonScriptFile(deployment.image))
 
-            files.append(
-                TerraformScheduledTaskFile(
-                    task=task,
-                    project_config=self.config,
-                    container_definitions_file=cdf,
+            if task.task_type == TaskType.scheduled:
+                files.append(
+                    TerraformScheduledTaskFile(
+                        task=task,
+                        schedule_expression=task.schedule_expression,
+                        project_config=self.config,
+                        container_definitions_file=cdf,
+                    )
                 )
-            )
+            else:
+                raise NotImplementedError("only scheduled tasks implemented for now")
 
         for file in files:
             file.write(file.dump())
