@@ -88,13 +88,12 @@ new_task = EcsTask(
     subnets=["subnet1", "subnet2"],
     security_groups=["sg1", "sg2"],
 )
-#
-#
+
 # # first we setup the project data
 project = Project(config=project_config, tasks=[task, new_task])
 
-project.copy_files()
-project.make_files()
+project.bootstrap()
+
 
 # project.build()
 # project.provision()

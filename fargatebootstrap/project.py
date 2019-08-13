@@ -112,3 +112,17 @@ class Project:
         # TODO: Fix this
         subprocess.run("cd terraform && terraform init")
         # subprocess.run("make tfapply")
+
+    def bootstrap(self):
+        self.copy_files()
+        self.make_files()
+        print(
+            """
+*******************************************************************************
+Project bootstrapped!
+*******************************************************************************
+
+Now run
+$ make lock_dependencies && make build
+"""
+        )
