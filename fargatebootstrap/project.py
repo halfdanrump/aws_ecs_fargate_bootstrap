@@ -1,6 +1,8 @@
 import subprocess
 from dataclasses import dataclass
 from typing import Tuple
+import os
+import shutil
 from .projectdata import ProjectConfig, EcsTask
 from .projectfiles import (
     DockerFile,
@@ -28,16 +30,17 @@ class Project:
 
     config: ProjectConfig
     tasks: Tuple[EcsTask]
+    # TODO turn below three vars into args and make @property def register on File classes
+    buildspec_dir = "buildspec"
+    containers_dir = "containers"
+    terraform_dir = "terraform"
 
     def make_files(self):
         files = []
         files.append(MakeFile(self.tasks))
         for task in self.tasks:
-            # print("making compose files")
             files.append(DockerComposeFile(task=task))
-            # print("making dockerbuild buildspec file")
             files.append(BuildspecDockerbuildFile(task=task))
-            # print("making container definitions file")
             cdf = ContainerDefinitionsFile(task=task)
             files.append(cdf)
 
@@ -60,17 +63,46 @@ class Project:
 
     def copy_files(self):
         """
-        - copy fles from `files/` to correct destinations
-        - build docker images
+        Copy files from `files/` to correct destinations
         """
-        subprocess.run("cp -r files/modules containers/", shell=True, check=True)
-        subprocess.run("cp -r files/terraform/* terraform/", shell=True, check=True)
-        for task in self.tasks:
-            subprocess.run(
-                f"cp -r files/buildspec/buildspec-unittest-allenvs.yml buildspec/buildspec-unittest-{task.name}-allenvs.yml",
-                shell=True,
-                check=True,
+        root_dir = os.path.split(__file__)[0]
+        modules_src = os.path.join(root_dir, "files/modules")
+        buildspec_src = os.path.join(
+            root_dir, "files/buildspec/buildspec-unittest-allenvs.yml"
+        )
+        terraform_src = os.path.join(root_dir, "files/terraform")
+        try:
+            shutil.copytree(
+                src=modules_src, dst=os.path.join(self.containers_dir, "modules/")
             )
+        except FileExistsError:
+            print("modules files already copied")
+
+        try:
+            shutil.copytree(src=terraform_src, dst=self.terraform_dir)
+        except FileExistsError:
+            print("terraform files already copied")
+
+        for task in self.tasks:
+            try:
+                if not os.path.exists(self.buildspec_dir):
+                    os.mkdir(self.buildspec_dir)
+                shutil.copy(
+                    src=buildspec_src,
+                    dst=os.path.join(
+                        self.buildspec_dir,
+                        f"buildspec-unittest-{task.name}-allenvs.yml",
+                    ),
+                )
+            except FileExistsError:
+                print("buildspec files already copied")
+        # subprocess.run("cp -r files/terraform/* terraform/", shell=True, check=True)
+        # for task in self.tasks:
+        #     subprocess.run(
+        #         f"cp -r files/buildspec/buildspec-unittest-allenvs.yml buildspec/buildspec-unittest-{task.name}-allenvs.yml",
+        #         shell=True,
+        #         check=True,
+        #     )
 
     def build(self):
         subprocess.run("make lock_dependencies", shell=True, check=True)
