@@ -1,6 +1,6 @@
 #!/bin/bash
-rm -r containers
-rm -r terraform
-rm -r buildspec
+rm -rf containers
+rm -rf terraform
+rm -rf buildspec
 rm docker-compose*
 rm Makefile
