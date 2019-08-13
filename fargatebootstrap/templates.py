@@ -142,7 +142,7 @@ module "fargate-scheduled-task-multicontainer" {
 
 ### aws codepipeline CICD
 
-module "zendishes_production_cicd" {
+module "{{ task.name }}_production_cicd" {
   source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
   name   = "{{ task.name }}"
   account_id = "{{ project_config.account_id }}"
