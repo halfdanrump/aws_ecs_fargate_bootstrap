@@ -1,8 +1,16 @@
 from pprint import pprint
 
-from projectdata import EcsTask, ProjectConfig, DockerImage, ContainerDeployment
+import fargatebootstrap
 
-from project import Project
+from fargatebootstrap.projectdata import (
+    EcsTask,
+    ProjectConfig,
+    DockerImage,
+    ContainerDeployment,
+)
+
+#
+from fargatebootstrap.project import Project
 
 project_config = ProjectConfig(
     account_id="211367837384",
