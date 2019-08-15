@@ -121,7 +121,7 @@ variable "{{ task.name }}_{{ task.environment }}_log_groups" {
 
 
 
-module "fargate-scheduled-task-multicontainer" {
+module "fargate-scheduled-{{ task.name }}-{{ task.environment }}" {
     source  = "halfdanrump/fargate-scheduled-task-multicontainer/aws"
     version = "12.6.1"
     account_id            = "{{ project_config.account_id }}"
@@ -138,21 +138,29 @@ module "fargate-scheduled-task-multicontainer" {
     cpu                   = "{{ task.cpu }}"
     subnets               = {{ subnets }}
     security_groups       = {{ security_groups }}
+
 }
 
 ### aws codepipeline CICD
 
-module "{{ task.name }}_production_cicd" {
-  source = "github.com/halfdanrump/terraform_modules/aws/ci_dockerbuild"
-  name   = "{{ task.name }}"
-  account_id = "{{ project_config.account_id }}"
-  environment = "{{ task.name }}"
-  github_webhook_token = "${var.github_webhook_token}"
-  git_repo = "{{ project_config.git_repo_name}}"
-  git_branch = "{{ project_config.git_repo_branch }}"
-  unittest_buildspec_path = "buildspec/buildspec-unittest-{{ task.name }}-allenvs.yml"
-  dockerbuild_timeout = "15"
-  dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-{{ task.name }}-{{ task.environment }}.yml"
+module "conterec_production_cicd" {
+  source                     = "halfdanrump/codepipeline-dockerbuild/aws"
+  version                    = "12.6.3"
+  name                       = "{{ task.name }}"
+  account_id                 = "{{ project_config.account_id }}"
+  environment                = "{{ task.environment }}"
+  github_webhook_token       = "${var.github_webhook_token}"
+  git_repo                   = "{{ project_config.git_repo_name }}"
+  git_branch                 = "{{ project_config.git_repo_branch }}"
+  dockerbuild_image          = "aws/codebuild/docker:18.09.0"
+  dockerbuild_timeout        = "15"
+  dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-production.yml"
+  unittest_buildspec_path    = "buildspec/buildspec-unittest-{{ task.name }}-allenvs.yml"
+  unittest_security_groups   = {{ security_groups }}
+  unittest_subnets           = {{ subnets }}
+  unittest_vpc               = "{{ project_config.vpc_name }}"
+  unittest_image             = "aws/codebuild/python:3.6.5"
+  unittest_timeout           = 15
 }
 """
     # TODO Split CICD into a different FileClass
