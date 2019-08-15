@@ -69,7 +69,7 @@ def main():
     raise NotImplementedError("You must implement this.")
 
 if __name__ == "__main__":
-    config = load_config(folder_name={{ image.name }})
+    config = load_config(folder_name="{{ image.name }})"
     init_sentry(config["sentry_dsn"])
     try:
         logger = Logger(config=config["logging"], default_loggers=[LoggerName.stdout])
