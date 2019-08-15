@@ -81,6 +81,24 @@ class ContainerDeployment:
 
 
 @dataclass
+class Pipeline(abc.ABC):
+    pass
+
+
+@dataclass
+class DockerbuildPipeline(Pipeline):
+    unittest_subnets: List[str]
+    unittest_security_groups: List[str]
+
+
+@dataclass
+class DeployPipeline(Pipeline):
+    service_name: str
+    unittest_subnets: List[str]
+    unittest_security_groups: List[str]
+
+
+@dataclass
 class EcsTask(abc.ABC):
     """
     A task is one or more container deployments
@@ -103,6 +121,7 @@ class EcsScheduledTask(EcsTask):
     """
 
     schedule_expression: str
+    pipeline: DockerbuildPipeline = None
     task_type = TaskType.scheduled
 
 
