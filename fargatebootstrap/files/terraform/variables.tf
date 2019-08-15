@@ -7,5 +7,5 @@ variable "organization" {
   default = "SnapDish"
 }
 
-# variable "github_provider_token" {}
-# variable "github_webhook_token" {}
+variable "github_provider_token" {}
+variable "github_webhook_token" {}
