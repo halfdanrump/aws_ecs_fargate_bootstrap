@@ -3,7 +3,8 @@ from pprint import pprint
 import fargatebootstrap
 
 from fargatebootstrap.projectdata import (
-    EcsTask,
+    EcsScheduledTask,
+    TaskType,
     ProjectConfig,
     DockerImage,
     ContainerDeployment,
@@ -25,51 +26,52 @@ project_config = ProjectConfig(
 # then prepare data required for Docker image
 environment = "production"
 
-annoy_image = DockerImage(
-    name="annoy",
+conterec_image = DockerImage(
+    name="conterec",
     environment=environment,
-    script_name="annoy_async",
-    description="Runs annoy service",
+    script_name="conterec_async",
+    description="Runs conterec service",
     ecr_endpoint=project_config.ecr_endpoint,
 )
 
 # # then prepare data required for deployment
-annoy_deployment = ContainerDeployment(image=annoy_image, task_name="slimdish")
+conterec_deployment = ContainerDeployment(image=conterec_image, task_name="foryou")
 
-d2v_image = DockerImage(
-    name="d2v",
+colarec_image = DockerImage(
+    name="colarec",
     environment=environment,
-    script_name="d2v_async",
-    description="Runs d2v service",
+    script_name="colarec_async",
+    description="Runs colarec service",
     ecr_endpoint=project_config.ecr_endpoint,
 )
 
 # # then prepare data required for deployment
-d2v_deployment = ContainerDeployment(image=d2v_image, task_name="slimdish")
+colarec_deployment = ContainerDeployment(image=colarec_image, task_name="foryou")
 
 
-task = EcsTask(
-    name="slimdish",
+task = EcsScheduledTask(
+    name="foryou",
     environment=environment,
     cpu=512,
     memory=2048,
+    schedule_expression="rate(5 minutes)",
     region=project_config.region,
-    container_deployments=[annoy_deployment, d2v_deployment],
+    container_deployments=[conterec_deployment, colarec_deployment],
     subnets=["subnet1", "subnet2"],
     security_groups=["sg1", "sg2"],
 )
 
 
-"""
-Add a task
-"""
+# """
+# Add a task
+# """
 new_environment = "staging"
-task_name = "my_new_task"
+task_name = "conterec"
 new_image = DockerImage(
-    name="new_image",
+    name="conterec",
     environment=new_environment,
     script_name="main",
-    description="Runs the new service",
+    description="Runs conterec",
     ecr_endpoint=project_config.ecr_endpoint,
 )
 
@@ -78,11 +80,12 @@ new_image = DockerImage(
 new_deployment = ContainerDeployment(image=new_image, task_name=task_name)
 
 
-new_task = EcsTask(
+new_task = EcsScheduledTask(
     name=task_name,
     environment=new_environment,
     cpu=512,
     memory=2048,
+    schedule_expression="rate(24 hours)",
     region=project_config.region,
     container_deployments=[new_deployment],
     subnets=["subnet1", "subnet2"],
@@ -90,8 +93,8 @@ new_task = EcsTask(
 )
 
 # # first we setup the project data
-project = Project(config=project_config, tasks=[task, new_task])
-
+project = Project(config=project_config, tasks=[task])
+# project.tasks.append(new_task)
 project.bootstrap()
 
 
