@@ -99,6 +99,14 @@ build_docker:
 \t\tdocker-compose -f docker-compose-{{ task.name }}-{{ task.environment }}.yml build
 {% endfor -%}
 
+{%- for task in tasks %}
+{%- for deployment in task.container_deployments %}
+run_{{ deployment.image.name }}:
+\t\tpython -m containers.{{ deployment.image.name }}.{{ deployment.image.script_name}}
+{% endfor -%}
+{% endfor -%}
+
+
 
 tfinit:
 \t\tcd terraform && terraform init
@@ -122,8 +130,8 @@ variable "{{ task.name }}_{{ task.environment }}_log_groups" {
 
 
 module "fargate-scheduled-{{ task.name }}-{{ task.environment }}" {
-    source  = "halfdanrump/fargate-scheduled-task-multicontainer/aws"
-    version = "12.6.1"
+    source                = "halfdanrump/fargate-scheduled-task-multicontainer/aws"
+    version               = "12.6.1"
     account_id            = "{{ project_config.account_id }}"
     name                  = "{{ task.name }}"
     environment           = "{{ task.environment }}"
@@ -142,7 +150,7 @@ module "fargate-scheduled-{{ task.name }}-{{ task.environment }}" {
 }
 
 ### aws codepipeline CICD
-
+{% if task.pipeline != None %}
 module "conterec_production_cicd" {
   source                     = "halfdanrump/codepipeline-dockerbuild/aws"
   version                    = "12.6.3"
@@ -154,14 +162,15 @@ module "conterec_production_cicd" {
   git_branch                 = "{{ project_config.git_repo_branch }}"
   dockerbuild_image          = "aws/codebuild/docker:18.09.0"
   dockerbuild_timeout        = "15"
-  dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-production.yml"
+  dockerbuild_buildspec_path = "buildspec/buildspec-dockerbuild-{{ task.name }}-{{ task.environment }}.yml"
   unittest_buildspec_path    = "buildspec/buildspec-unittest-{{ task.name }}-allenvs.yml"
-  unittest_security_groups   = {{ security_groups }}
-  unittest_subnets           = {{ subnets }}
+  unittest_security_groups   = {{ unittest_security_groups }}
+  unittest_subnets           = {{ unittest_subnets }}
   unittest_vpc               = "{{ project_config.vpc_name }}"
   unittest_image             = "aws/codebuild/python:3.6.5"
   unittest_timeout           = 15
 }
+{% endif %}
 """
     # TODO Split CICD into a different FileClass
 )
