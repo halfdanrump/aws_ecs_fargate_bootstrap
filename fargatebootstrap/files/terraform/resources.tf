@@ -1,6 +1,6 @@
 provider "aws" {
   region     = "${var.region}"
-  version = "~> 2.3"
+  version = "= 2.7"
 }
 
 provider "github" {
