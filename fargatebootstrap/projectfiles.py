@@ -112,14 +112,14 @@ class BuildspecDockerbuildFile(FileBase):
             },
             "post_build": [
                 f"docker-compose -f {docker_compose_filename} push",
-                f"printf '{json.dumps(imagedefinitions)}' > {imagedefinitions_filename}",
+                f"printf {json.dumps(imagedefinitions)} > {imagedefinitions_filename}",
             ],
         }
 
         document = {
             "version": buildspec_version,
             "phases": phases,
-            "artifacts": imagedefinitions_filename,
+            "artifacts": {"files": imagedefinitions_filename},
         }
         self.task = task
         self._imagedefinitions = imagedefinitions
@@ -329,6 +329,10 @@ class TerraformScheduledTaskFile(FileBase):
             container_definitions_filename=cd_filepath,
             subnets=json.dumps(self.task.subnets),
             security_groups=json.dumps(self.task.security_groups),
+            unittest_subnets=json.dumps(self.task.pipeline.unittest_subnets),
+            unittest_security_groups=json.dumps(
+                self.task.pipeline.unittest_security_groups
+            ),
         )
 
     @property
